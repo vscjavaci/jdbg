@@ -54,7 +54,7 @@ public class TTY implements EventNotifier {
     /**
      * The name of this tool.
      */
-    private static final String progname = "jdb";
+    private static final String progname = "jdbg";
 
     private volatile boolean shuttingDown = false;
 

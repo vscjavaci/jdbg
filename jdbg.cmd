@@ -56,11 +56,15 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 :LOAD
 PUSHD %CD%
 
-javac.exe -classpath "%JDK_PATH%\lib\tools.jar" %~dp0src\*.java
+SET OUTPUT_DIR=%TEMP%\jdbg-%RANDOM%
+MKDIR "%OUTPUT_DIR%"
+
+javac.exe -classpath "%JDK_PATH%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java
 IF NOT %ERRORLEVEL% == 0 (
 	GOTO EOF
 )
-CALL java.exe -classpath "%JDK_PATH%\lib\tools.jar" com.sun.tools.example.debug.tty.TTY %*
+
+CALL java.exe -classpath "%OUTPUT_DIR%";"%JDK_PATH%\lib\tools.jar" com.sun.tools.example.debug.tty.TTY %*
 
 POPD
 GOTO EOF
