@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pushd `dirname $0` > /dev/null
+SCRIPT_PATH=`pwd -P`
+popd > /dev/null
+
+javac -classpath $(/usr/libexec/java_home)/lib/tools.jar $SCRIPT_PATH/src/*.java
+
+java -classpath $(/usr/libexec/java_home)/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
