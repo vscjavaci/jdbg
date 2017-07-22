@@ -4,6 +4,9 @@ pushd `dirname $0` > /dev/null
 SCRIPT_PATH=`pwd -P`
 popd > /dev/null
 
-javac -classpath $(/usr/libexec/java_home)/lib/tools.jar $SCRIPT_PATH/src/*.java
+OUTPUT_DIR=/tmp/jdbg-$((RANDOM))
+mkdir $OUTPUT_DIR
 
-java -classpath $(/usr/libexec/java_home)/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
+javac -classpath $(/usr/libexec/java_home)/lib/tools.jar -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
+
+java -classpath $OUTPUT_DIR:$(/usr/libexec/java_home)/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
