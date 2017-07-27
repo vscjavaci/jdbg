@@ -40,6 +40,7 @@ import com.sun.jdi.request.*;
 import com.sun.tools.example.debug.expr.ExpressionParser;
 import com.sun.tools.example.debug.expr.ParseException;
 
+import java.lang.*;
 import java.text.*;
 import java.util.*;
 import java.io.*;
@@ -454,6 +455,18 @@ class Commands {
             MessageOutput.println(statusFormat,
                                   new Object [] {idBuffer.toString(),
                                                  nameBuffer.toString()});
+        }
+    }
+
+    void commandSleep(StringTokenizer t) {
+        long millis = 1000;
+        if (t.hasMoreTokens()) {
+            millis = Long.parseLong(t.nextToken(), 10);
+        }
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            // silently ignore
         }
     }
 

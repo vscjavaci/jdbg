@@ -319,6 +319,7 @@ public class TTY implements EventNotifier {
         {"run",          "y",         "n"},
         {"save",         "n",         "n"},
         {"set",          "n",         "n"},
+        {"sleep",        "y",         "y"},
         {"sourcepath",   "y",         "y"},
         {"step",         "n",         "n"},
         {"stepi",        "n",         "n"},
@@ -560,6 +561,8 @@ public class TTY implements EventNotifier {
                             evaluator.commandExclude(t);
                         } else if (cmd.equals("read")) {
                             readCommand(t);
+                        } else if (cmd.equals("sleep")) {
+                            evaluator.commandSleep(t);
                         } else if (cmd.equals("help") || cmd.equals("?")) {
                             help();
                         } else if (cmd.equals("version")) {
