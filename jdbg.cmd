@@ -38,40 +38,30 @@ CALL "!PATH_CAR!" %*
 EXIT /B !ERRORLEVEL!
 
 :ENTRYPOINT
-FOR /F "delims=" %%X IN ('WHERE javac.exe') DO (
-	SET JDK_PATH=%%~dpX
-	IF "!JDK_PATH:~-1!" == "\" (
-		SET JDK_PATH=!JDK_PATH:~0,-1!
-	)
-	FOR /F "delims=; tokens=1,*" %%Y IN ("!JDK_PATH!") DO (
-		SET JDK_PATH=%%~dpY
-	)
-	IF "!JDK_PATH:~-1!" == "\" (
-		SET JDK_PATH=!JDK_PATH:~0,-1!
-	)
-)
-
 SETLOCAL DISABLEDELAYEDEXPANSION
+
+IF "%JAVA_HOME%" == "" (
+	ECHO Error: JDK not found, make sure you set the JAVA_HOME environment variable 1>&2
+	EXIT /B -1
+)
 
 :LOAD
 PUSHD %CD%
 
 SET OUTPUT_DIR=%TEMP%\jdbg-%RANDOM%
+
 MKDIR "%OUTPUT_DIR%"
 
-javac.exe -classpath "%JDK_PATH%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java
+"%JAVA_HOME%\bin\javac.exe" -classpath "%JAVA_HOME%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java
 IF NOT %ERRORLEVEL% == 0 (
 	GOTO EOF
 )
 
-CALL java.exe -classpath "%OUTPUT_DIR%";"%JDK_PATH%\lib\tools.jar" com.sun.tools.example.debug.tty.TTY %*
+"%JAVA_HOME%\bin\java.exe" -classpath "%OUTPUT_DIR%";"%JAVA_HOME%\lib\tools.jar" com.sun.tools.example.debug.tty.TTY %*
+
+RMDIR /S /Q "%OUTPUT_DIR%"
 
 POPD
-GOTO EOF
-
-:ABORT
-PAUSE
-EXIT /B 1
 
 :EOF
 EXIT /B %ERRORLEVEL%
