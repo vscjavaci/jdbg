@@ -5,8 +5,11 @@ SCRIPT_PATH=`pwd -P`
 popd > /dev/null
 
 OUTPUT_DIR=/tmp/jdbg-$((RANDOM))
+
 mkdir $OUTPUT_DIR
 
 javac -classpath $(/usr/libexec/java_home)/lib/tools.jar -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
 
 java -classpath $OUTPUT_DIR:$(/usr/libexec/java_home)/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
+
+rmdir $OUTPUT_DIR
