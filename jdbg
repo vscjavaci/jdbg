@@ -2,14 +2,19 @@
 
 pushd `dirname $0` > /dev/null
 SCRIPT_PATH=`pwd -P`
+
+if [ -z "$JAVA_HOME" ]; then
+	JAVA_HOME=$(/usr/libexec/java_home)
+fi
+
 popd > /dev/null
 
 OUTPUT_DIR=/tmp/jdbg-$((RANDOM))
 
 mkdir $OUTPUT_DIR
 
-javac -classpath $(/usr/libexec/java_home)/lib/tools.jar -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
+javac -classpath $JAVA_HOME/lib/tools.jar -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
 
-java -classpath $OUTPUT_DIR:$(/usr/libexec/java_home)/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
+java -classpath $OUTPUT_DIR:$JAVA_HOME/lib/tools.jar com.sun.tools.example.debug.tty.TTY $*
 
-rmdir $OUTPUT_DIR
+rm -R $OUTPUT_DIR
