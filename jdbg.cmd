@@ -57,7 +57,7 @@ IF NOT %ERRORLEVEL% == 0 (
 	GOTO EOF
 )
 
-"%JAVA_HOME%\bin\java.exe" -classpath "%OUTPUT_DIR%";"%JAVA_HOME%\lib\tools.jar" jdbg.TTY %*
+"%JAVA_HOME%\bin\java.exe" -classpath "%OUTPUT_DIR%";"%JAVA_HOME%\lib\tools.jar" jdbg.MainClass %*
 
 RMDIR /S /Q "%OUTPUT_DIR%"
 

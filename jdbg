@@ -15,6 +15,6 @@ mkdir $OUTPUT_DIR
 
 javac -classpath $JAVA_HOME/lib/tools.jar -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
 
-java -classpath $OUTPUT_DIR:$JAVA_HOME/lib/tools.jar jdbg.TTY $*
+java -classpath $OUTPUT_DIR:$JAVA_HOME/lib/tools.jar jdbg.MainClass $*
 
 rm -R $OUTPUT_DIR

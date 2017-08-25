@@ -60,8 +60,6 @@ public class EventHandler implements Runnable {
     }
 
     private boolean handleEvent(Event event) {
-        notifier.receivedEvent(event);
-
         if (event instanceof ExceptionEvent) {
             return exceptionEvent(event);
         } else if (event instanceof BreakpointEvent) {

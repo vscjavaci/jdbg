@@ -21,5 +21,4 @@ interface EventNotifier {
     boolean methodExitEvent(MethodExitEvent e);
 
     void vmInterrupted();
-    void receivedEvent(Event event);
 }
