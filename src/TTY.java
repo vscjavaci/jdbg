@@ -5,22 +5,12 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
 import com.sun.jdi.connect.*;
 
-import java.util.*;
-import java.io.*;
-
 public class TTY implements EventNotifier {
-    EventHandler handler = null;
-
     /**
      * List of Strings to execute at each stop.
      */
-    private List<String> monitorCommands = new ArrayList<String>();
-    private int monitorCount = 0;
-
-    /**
-     * The name of this tool.
-     */
-    private static final String progname = "jdbg";
+    // private List<String> monitorCommands = new ArrayList<String>();
+    // private int monitorCount = 0;
 
     private volatile boolean shuttingDown = false;
 
@@ -175,11 +165,11 @@ public class TTY implements EventNotifier {
     public void vmInterrupted() {
         Thread.yield();  // fetch output
         printCurrentLocation();
-        for (String cmd : monitorCommands) {
-            StringTokenizer t = new StringTokenizer(cmd);
-            t.nextToken();  // get rid of monitor number
-            executeCommand(t);
-        }
+        // for (String cmd : monitorCommands) {
+        //     StringTokenizer t = new StringTokenizer(cmd);
+        //     t.nextToken();  // get rid of monitor number
+        //     executeCommand(t);
+        // }
         MessageOutput.printPrompt();
     }
 
@@ -229,414 +219,414 @@ public class TTY implements EventNotifier {
         MessageOutput.println("zz help text");
     }
 
-    private static final String[][] commandList = {
-        /*
-         * NOTE: this list must be kept sorted in ascending ASCII
-         *       order by element [0].  Ref: isCommand() below.
-         *
-         *Command      OK when        OK when
-         * name      disconnected?   readonly?
-         *------------------------------------
-         */
-        {"!!",           "n",         "y"},
-        {"?",            "y",         "y"},
-        {"bytecodes",    "n",         "y"},
-        {"catch",        "y",         "n"},
-        {"class",        "n",         "y"},
-        {"classes",      "n",         "y"},
-        {"classpath",    "n",         "y"},
-        {"clear",        "y",         "n"},
-        {"connectors",   "y",         "y"},
-        {"cont",         "n",         "n"},
-        {"disablegc",    "n",         "n"},
-        {"down",         "n",         "y"},
-        {"dump",         "n",         "y"},
-        {"enablegc",     "n",         "n"},
-        {"eval",         "n",         "y"},
-        {"exclude",      "y",         "n"},
-        {"exit",         "y",         "y"},
-        {"extension",    "n",         "y"},
-        {"fields",       "n",         "y"},
-        {"gc",           "n",         "n"},
-        {"help",         "y",         "y"},
-        {"ignore",       "y",         "n"},
-        {"interrupt",    "n",         "n"},
-        {"kill",         "n",         "n"},
-        {"lines",        "n",         "y"},
-        {"list",         "n",         "y"},
-        {"load",         "n",         "y"},
-        {"locals",       "n",         "y"},
-        {"lock",         "n",         "n"},
-        {"memory",       "n",         "y"},
-        {"methods",      "n",         "y"},
-        {"monitor",      "n",         "n"},
-        {"next",         "n",         "n"},
-        {"pop",          "n",         "n"},
-        {"print",        "n",         "y"},
-        {"quit",         "y",         "y"},
-        {"read",         "y",         "y"},
-        {"redefine",     "n",         "n"},
-        {"reenter",      "n",         "n"},
-        {"resume",       "n",         "n"},
-        {"run",          "y",         "n"},
-        {"save",         "n",         "n"},
-        {"set",          "n",         "n"},
-        {"sleep",        "y",         "y"},
-        {"sourcepath",   "y",         "y"},
-        {"step",         "n",         "n"},
-        {"stepi",        "n",         "n"},
-        {"stop",         "y",         "n"},
-        {"suspend",      "n",         "n"},
-        {"thread",       "n",         "y"},
-        {"threadgroup",  "n",         "y"},
-        {"threadgroups", "n",         "y"},
-        {"threadlocks",  "n",         "y"},
-        {"threads",      "n",         "y"},
-        {"trace",        "n",         "n"},
-        {"unmonitor",    "n",         "n"},
-        {"untrace",      "n",         "n"},
-        {"unwatch",      "y",         "n"},
-        {"up",           "n",         "y"},
-        {"use",          "y",         "y"},
-        {"version",      "y",         "y"},
-        {"watch",        "y",         "n"},
-        {"where",        "n",         "y"},
-        {"wherei",       "n",         "y"},
-    };
+    // private static final String[][] commandList = {
+    //     /*
+    //      * NOTE: this list must be kept sorted in ascending ASCII
+    //      *       order by element [0].  Ref: isCommand() below.
+    //      *
+    //      *Command      OK when        OK when
+    //      * name      disconnected?   readonly?
+    //      *------------------------------------
+    //      */
+    //     {"!!",           "n",         "y"},
+    //     {"?",            "y",         "y"},
+    //     {"bytecodes",    "n",         "y"},
+    //     {"catch",        "y",         "n"},
+    //     {"class",        "n",         "y"},
+    //     {"classes",      "n",         "y"},
+    //     {"classpath",    "n",         "y"},
+    //     {"clear",        "y",         "n"},
+    //     {"connectors",   "y",         "y"},
+    //     {"cont",         "n",         "n"},
+    //     {"disablegc",    "n",         "n"},
+    //     {"down",         "n",         "y"},
+    //     {"dump",         "n",         "y"},
+    //     {"enablegc",     "n",         "n"},
+    //     {"eval",         "n",         "y"},
+    //     {"exclude",      "y",         "n"},
+    //     {"exit",         "y",         "y"},
+    //     {"extension",    "n",         "y"},
+    //     {"fields",       "n",         "y"},
+    //     {"gc",           "n",         "n"},
+    //     {"help",         "y",         "y"},
+    //     {"ignore",       "y",         "n"},
+    //     {"interrupt",    "n",         "n"},
+    //     {"kill",         "n",         "n"},
+    //     {"lines",        "n",         "y"},
+    //     {"list",         "n",         "y"},
+    //     {"load",         "n",         "y"},
+    //     {"locals",       "n",         "y"},
+    //     {"lock",         "n",         "n"},
+    //     {"memory",       "n",         "y"},
+    //     {"methods",      "n",         "y"},
+    //     {"monitor",      "n",         "n"},
+    //     {"next",         "n",         "n"},
+    //     {"pop",          "n",         "n"},
+    //     {"print",        "n",         "y"},
+    //     {"quit",         "y",         "y"},
+    //     {"read",         "y",         "y"},
+    //     {"redefine",     "n",         "n"},
+    //     {"reenter",      "n",         "n"},
+    //     {"resume",       "n",         "n"},
+    //     {"run",          "y",         "n"},
+    //     {"save",         "n",         "n"},
+    //     {"set",          "n",         "n"},
+    //     {"sleep",        "y",         "y"},
+    //     {"sourcepath",   "y",         "y"},
+    //     {"step",         "n",         "n"},
+    //     {"stepi",        "n",         "n"},
+    //     {"stop",         "y",         "n"},
+    //     {"suspend",      "n",         "n"},
+    //     {"thread",       "n",         "y"},
+    //     {"threadgroup",  "n",         "y"},
+    //     {"threadgroups", "n",         "y"},
+    //     {"threadlocks",  "n",         "y"},
+    //     {"threads",      "n",         "y"},
+    //     {"trace",        "n",         "n"},
+    //     {"unmonitor",    "n",         "n"},
+    //     {"untrace",      "n",         "n"},
+    //     {"unwatch",      "y",         "n"},
+    //     {"up",           "n",         "y"},
+    //     {"use",          "y",         "y"},
+    //     {"version",      "y",         "y"},
+    //     {"watch",        "y",         "n"},
+    //     {"where",        "n",         "y"},
+    //     {"wherei",       "n",         "y"},
+    // };
 
-    /*
-     * Look up the command string in commandList.
-     * If found, return the index.
-     * If not found, return index < 0
-     */
-    private int isCommand(String key) {
-        //Reference: binarySearch() in java/util/Arrays.java
-        //           Adapted for use with String[][0].
-        int low = 0;
-        int high = commandList.length - 1;
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            String midVal = commandList[mid][0];
-            int compare = midVal.compareTo(key);
-            if (compare < 0) {
-                low = mid + 1;
-            } else if (compare > 0) {
-                high = mid - 1;
-            }
-            else {
-                return mid; // key found
-        }
-        }
-        return -(low + 1);  // key not found.
-    };
+    // /*
+    //  * Look up the command string in commandList.
+    //  * If found, return the index.
+    //  * If not found, return index < 0
+    //  */
+    // private int isCommand(String key) {
+    //     //Reference: binarySearch() in java/util/Arrays.java
+    //     //           Adapted for use with String[][0].
+    //     int low = 0;
+    //     int high = commandList.length - 1;
+    //     while (low <= high) {
+    //         int mid = (low + high) >>> 1;
+    //         String midVal = commandList[mid][0];
+    //         int compare = midVal.compareTo(key);
+    //         if (compare < 0) {
+    //             low = mid + 1;
+    //         } else if (compare > 0) {
+    //             high = mid - 1;
+    //         }
+    //         else {
+    //             return mid; // key found
+    //     }
+    //     }
+    //     return -(low + 1);  // key not found.
+    // };
 
-    /*
-     * Return true if the command is OK when disconnected.
-     */
-    private boolean isDisconnectCmd(int ii) {
-        if (ii < 0 || ii >= commandList.length) {
-            return false;
-        }
-        return (commandList[ii][1].equals("y"));
-    }
+    // /*
+    //  * Return true if the command is OK when disconnected.
+    //  */
+    // private boolean isDisconnectCmd(int ii) {
+    //     if (ii < 0 || ii >= commandList.length) {
+    //         return false;
+    //     }
+    //     return (commandList[ii][1].equals("y"));
+    // }
 
-    /*
-     * Return true if the command is OK when readonly.
-     */
-    private boolean isReadOnlyCmd(int ii) {
-        if (ii < 0 || ii >= commandList.length) {
-            return false;
-        }
-        return (commandList[ii][2].equals("y"));
-    };
-
-
-    void executeCommand(StringTokenizer t) {
-        String cmd = t.nextToken().toLowerCase();
-        // Normally, prompt for the next command after this one is done
-        boolean showPrompt = true;
+    // /*
+    //  * Return true if the command is OK when readonly.
+    //  */
+    // private boolean isReadOnlyCmd(int ii) {
+    //     if (ii < 0 || ii >= commandList.length) {
+    //         return false;
+    //     }
+    //     return (commandList[ii][2].equals("y"));
+    // };
 
 
-        /*
-         * Anything starting with # is discarded as a no-op or 'comment'.
-         */
-        if (!cmd.startsWith("#")) {
-            /*
-             * Next check for an integer repetition prefix.  If found,
-             * recursively execute cmd that number of times.
-             */
-            if (Character.isDigit(cmd.charAt(0)) && t.hasMoreTokens()) {
-                try {
-                    int repeat = Integer.parseInt(cmd);
-                    String subcom = t.nextToken("");
-                    while (repeat-- > 0) {
-                        executeCommand(new StringTokenizer(subcom));
-                        showPrompt = false; // Bypass the printPrompt() below.
-                    }
-                } catch (NumberFormatException exc) {
-                    MessageOutput.println("Unrecognized command.  Try help...", cmd);
-                }
-            } else {
-                int commandNumber = isCommand(cmd);
-                /*
-                 * Check for an unknown command
-                 */
-                if (commandNumber < 0) {
-                    MessageOutput.println("Unrecognized command.  Try help...", cmd);
-                } else if (!Env.connection().isOpen() && !isDisconnectCmd(commandNumber)) {
-                    MessageOutput.println("Command not valid until the VM is started with the run command",
-                                          cmd);
-                } else if (Env.connection().isOpen() && !Env.vm().canBeModified() &&
-                           !isReadOnlyCmd(commandNumber)) {
-                    MessageOutput.println("Command is not supported on a read-only VM connection",
-                                          cmd);
-                } else {
+    // void executeCommand(StringTokenizer t) {
+    //     String cmd = t.nextToken().toLowerCase();
+    //     // Normally, prompt for the next command after this one is done
+    //     boolean showPrompt = true;
 
-                    Commands evaluator = new Commands();
-                    try {
-                        if (cmd.equals("print")) {
-                            evaluator.commandPrint(t, false);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("eval")) {
-                            evaluator.commandPrint(t, false);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("set")) {
-                            evaluator.commandSet(t);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("dump")) {
-                            evaluator.commandPrint(t, true);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("locals")) {
-                            evaluator.commandLocals();
-                        } else if (cmd.equals("classes")) {
-                            evaluator.commandClasses();
-                        } else if (cmd.equals("class")) {
-                            evaluator.commandClass(t);
-                        } else if (cmd.equals("connectors")) {
-                            evaluator.commandConnectors(Bootstrap.virtualMachineManager());
-                        } else if (cmd.equals("methods")) {
-                            evaluator.commandMethods(t);
-                        } else if (cmd.equals("fields")) {
-                            evaluator.commandFields(t);
-                        } else if (cmd.equals("threads")) {
-                            evaluator.commandThreads(t);
-                        } else if (cmd.equals("thread")) {
-                            evaluator.commandThread(t);
-                        } else if (cmd.equals("suspend")) {
-                            evaluator.commandSuspend(t);
-                        } else if (cmd.equals("resume")) {
-                            evaluator.commandResume(t);
-                        } else if (cmd.equals("cont")) {
-                            evaluator.commandCont();
-                        } else if (cmd.equals("threadgroups")) {
-                            evaluator.commandThreadGroups();
-                        } else if (cmd.equals("threadgroup")) {
-                            evaluator.commandThreadGroup(t);
-                        } else if (cmd.equals("catch")) {
-                            evaluator.commandCatchException(t);
-                        } else if (cmd.equals("ignore")) {
-                            evaluator.commandIgnoreException(t);
-                        } else if (cmd.equals("step")) {
-                            evaluator.commandStep(t);
-                        } else if (cmd.equals("stepi")) {
-                            evaluator.commandStepi();
-                        } else if (cmd.equals("next")) {
-                            evaluator.commandNext();
-                        } else if (cmd.equals("kill")) {
-                            evaluator.commandKill(t);
-                        } else if (cmd.equals("interrupt")) {
-                            evaluator.commandInterrupt(t);
-                        } else if (cmd.equals("trace")) {
-                            evaluator.commandTrace(t);
-                        } else if (cmd.equals("untrace")) {
-                            evaluator.commandUntrace(t);
-                        } else if (cmd.equals("where")) {
-                            evaluator.commandWhere(t, false);
-                        } else if (cmd.equals("wherei")) {
-                            evaluator.commandWhere(t, true);
-                        } else if (cmd.equals("up")) {
-                            evaluator.commandUp(t);
-                        } else if (cmd.equals("down")) {
-                            evaluator.commandDown(t);
-                        } else if (cmd.equals("load")) {
-                            evaluator.commandLoad(t);
-                        } else if (cmd.equals("run")) {
-                            evaluator.commandRun(t);
-                            /*
-                             * Fire up an event handler, if the connection was just
-                             * opened. Since this was done from the run command
-                             * we don't stop the VM on its VM start event (so
-                             * arg 2 is false).
-                             */
-                            if ((handler == null) && Env.connection().isOpen()) {
-                                handler = new EventHandler(this, false);
-                            }
-                        } else if (cmd.equals("memory")) {
-                            evaluator.commandMemory();
-                        } else if (cmd.equals("gc")) {
-                            evaluator.commandGC();
-                        } else if (cmd.equals("stop")) {
-                            evaluator.commandStop(t);
-                        } else if (cmd.equals("clear")) {
-                            evaluator.commandClear(t);
-                        } else if (cmd.equals("watch")) {
-                            evaluator.commandWatch(t);
-                        } else if (cmd.equals("unwatch")) {
-                            evaluator.commandUnwatch(t);
-                        } else if (cmd.equals("list")) {
-                            evaluator.commandList(t);
-                        } else if (cmd.equals("lines")) { // Undocumented command: useful for testing.
-                            evaluator.commandLines(t);
-                        } else if (cmd.equals("classpath")) {
-                            evaluator.commandClasspath(t);
-                        } else if (cmd.equals("use") || cmd.equals("sourcepath")) {
-                            evaluator.commandUse(t);
-                        } else if (cmd.equals("monitor")) {
-                            monitorCommand(t);
-                        } else if (cmd.equals("unmonitor")) {
-                            unmonitorCommand(t);
-                        } else if (cmd.equals("lock")) {
-                            evaluator.commandLock(t);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("threadlocks")) {
-                            evaluator.commandThreadlocks(t);
-                        } else if (cmd.equals("disablegc")) {
-                            evaluator.commandDisableGC(t);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("enablegc")) {
-                            evaluator.commandEnableGC(t);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("save")) { // Undocumented command: useful for testing.
-                            evaluator.commandSave(t);
-                            showPrompt = false;        // asynchronous command
-                        } else if (cmd.equals("bytecodes")) { // Undocumented command: useful for testing.
-                            evaluator.commandBytecodes(t);
-                        } else if (cmd.equals("redefine")) {
-                            evaluator.commandRedefine(t);
-                        } else if (cmd.equals("pop")) {
-                            evaluator.commandPopFrames(t, false);
-                        } else if (cmd.equals("reenter")) {
-                            evaluator.commandPopFrames(t, true);
-                        } else if (cmd.equals("extension")) {
-                            evaluator.commandExtension(t);
-                        } else if (cmd.equals("exclude")) {
-                            evaluator.commandExclude(t);
-                        } else if (cmd.equals("read")) {
-                            readCommand(t);
-                        } else if (cmd.equals("sleep")) {
-                            evaluator.commandSleep(t);
-                        } else if (cmd.equals("help") || cmd.equals("?")) {
-                            help();
-                        } else if (cmd.equals("version")) {
-                            evaluator.commandVersion(progname,
-                                                     Bootstrap.virtualMachineManager());
-                        } else if (cmd.equals("quit") || cmd.equals("exit")) {
-                            if (handler != null) {
-                                handler.shutdown();
-                            }
-                            Env.shutdown();
-                        } else {
-                            MessageOutput.println("Unrecognized command.  Try help...", cmd);
-                        }
-                    } catch (VMCannotBeModifiedException rovm) {
-                        MessageOutput.println("Command is not supported on a read-only VM connection", cmd);
-                    } catch (UnsupportedOperationException uoe) {
-                        MessageOutput.println("Command is not supported on the target VM", cmd);
-                    } catch (VMNotConnectedException vmnse) {
-                        MessageOutput.println("Command not valid until the VM is started with the run command",
-                                              cmd);
-                    } catch (Exception e) {
-                        MessageOutput.printException("Internal exception:", e);
-                    }
-                }
-            }
-        }
-        if (showPrompt) {
-            MessageOutput.printPrompt();
-        }
-    }
+
+    //     /*
+    //      * Anything starting with # is discarded as a no-op or 'comment'.
+    //      */
+    //     if (!cmd.startsWith("#")) {
+    //         /*
+    //          * Next check for an integer repetition prefix.  If found,
+    //          * recursively execute cmd that number of times.
+    //          */
+    //         if (Character.isDigit(cmd.charAt(0)) && t.hasMoreTokens()) {
+    //             try {
+    //                 int repeat = Integer.parseInt(cmd);
+    //                 String subcom = t.nextToken("");
+    //                 while (repeat-- > 0) {
+    //                     executeCommand(new StringTokenizer(subcom));
+    //                     showPrompt = false; // Bypass the printPrompt() below.
+    //                 }
+    //             } catch (NumberFormatException exc) {
+    //                 MessageOutput.println("Unrecognized command.  Try help...", cmd);
+    //             }
+    //         } else {
+    //             int commandNumber = isCommand(cmd);
+    //             /*
+    //              * Check for an unknown command
+    //              */
+    //             if (commandNumber < 0) {
+    //                 MessageOutput.println("Unrecognized command.  Try help...", cmd);
+    //             } else if (!Env.connection().isOpen() && !isDisconnectCmd(commandNumber)) {
+    //                 MessageOutput.println("Command not valid until the VM is started with the run command",
+    //                                       cmd);
+    //             } else if (Env.connection().isOpen() && !Env.vm().canBeModified() &&
+    //                        !isReadOnlyCmd(commandNumber)) {
+    //                 MessageOutput.println("Command is not supported on a read-only VM connection",
+    //                                       cmd);
+    //             } else {
+
+    //                 Commands evaluator = new Commands();
+    //                 try {
+    //                     if (cmd.equals("print")) {
+    //                         evaluator.commandPrint(t, false);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("eval")) {
+    //                         evaluator.commandPrint(t, false);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("set")) {
+    //                         evaluator.commandSet(t);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("dump")) {
+    //                         evaluator.commandPrint(t, true);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("locals")) {
+    //                         evaluator.commandLocals();
+    //                     } else if (cmd.equals("classes")) {
+    //                         evaluator.commandClasses();
+    //                     } else if (cmd.equals("class")) {
+    //                         evaluator.commandClass(t);
+    //                     } else if (cmd.equals("connectors")) {
+    //                         evaluator.commandConnectors(Bootstrap.virtualMachineManager());
+    //                     } else if (cmd.equals("methods")) {
+    //                         evaluator.commandMethods(t);
+    //                     } else if (cmd.equals("fields")) {
+    //                         evaluator.commandFields(t);
+    //                     } else if (cmd.equals("threads")) {
+    //                         evaluator.commandThreads(t);
+    //                     } else if (cmd.equals("thread")) {
+    //                         evaluator.commandThread(t);
+    //                     } else if (cmd.equals("suspend")) {
+    //                         evaluator.commandSuspend(t);
+    //                     } else if (cmd.equals("resume")) {
+    //                         evaluator.commandResume(t);
+    //                     } else if (cmd.equals("cont")) {
+    //                         evaluator.commandCont();
+    //                     } else if (cmd.equals("threadgroups")) {
+    //                         evaluator.commandThreadGroups();
+    //                     } else if (cmd.equals("threadgroup")) {
+    //                         evaluator.commandThreadGroup(t);
+    //                     } else if (cmd.equals("catch")) {
+    //                         evaluator.commandCatchException(t);
+    //                     } else if (cmd.equals("ignore")) {
+    //                         evaluator.commandIgnoreException(t);
+    //                     } else if (cmd.equals("step")) {
+    //                         evaluator.commandStep(t);
+    //                     } else if (cmd.equals("stepi")) {
+    //                         evaluator.commandStepi();
+    //                     } else if (cmd.equals("next")) {
+    //                         evaluator.commandNext();
+    //                     } else if (cmd.equals("kill")) {
+    //                         evaluator.commandKill(t);
+    //                     } else if (cmd.equals("interrupt")) {
+    //                         evaluator.commandInterrupt(t);
+    //                     } else if (cmd.equals("trace")) {
+    //                         evaluator.commandTrace(t);
+    //                     } else if (cmd.equals("untrace")) {
+    //                         evaluator.commandUntrace(t);
+    //                     } else if (cmd.equals("where")) {
+    //                         evaluator.commandWhere(t, false);
+    //                     } else if (cmd.equals("wherei")) {
+    //                         evaluator.commandWhere(t, true);
+    //                     } else if (cmd.equals("up")) {
+    //                         evaluator.commandUp(t);
+    //                     } else if (cmd.equals("down")) {
+    //                         evaluator.commandDown(t);
+    //                     } else if (cmd.equals("load")) {
+    //                         evaluator.commandLoad(t);
+    //                     } else if (cmd.equals("run")) {
+    //                         evaluator.commandRun(t);
+    //                         /*
+    //                          * Fire up an event handler, if the connection was just
+    //                          * opened. Since this was done from the run command
+    //                          * we don't stop the VM on its VM start event (so
+    //                          * arg 2 is false).
+    //                          */
+    //                         if ((handler == null) && Env.connection().isOpen()) {
+    //                             handler = new EventHandler(this, false);
+    //                         }
+    //                     } else if (cmd.equals("memory")) {
+    //                         evaluator.commandMemory();
+    //                     } else if (cmd.equals("gc")) {
+    //                         evaluator.commandGC();
+    //                     } else if (cmd.equals("stop")) {
+    //                         evaluator.commandStop(t);
+    //                     } else if (cmd.equals("clear")) {
+    //                         evaluator.commandClear(t);
+    //                     } else if (cmd.equals("watch")) {
+    //                         evaluator.commandWatch(t);
+    //                     } else if (cmd.equals("unwatch")) {
+    //                         evaluator.commandUnwatch(t);
+    //                     } else if (cmd.equals("list")) {
+    //                         evaluator.commandList(t);
+    //                     } else if (cmd.equals("lines")) { // Undocumented command: useful for testing.
+    //                         evaluator.commandLines(t);
+    //                     } else if (cmd.equals("classpath")) {
+    //                         evaluator.commandClasspath(t);
+    //                     } else if (cmd.equals("use") || cmd.equals("sourcepath")) {
+    //                         evaluator.commandUse(t);
+    //                     } else if (cmd.equals("monitor")) {
+    //                         monitorCommand(t);
+    //                     } else if (cmd.equals("unmonitor")) {
+    //                         unmonitorCommand(t);
+    //                     } else if (cmd.equals("lock")) {
+    //                         evaluator.commandLock(t);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("threadlocks")) {
+    //                         evaluator.commandThreadlocks(t);
+    //                     } else if (cmd.equals("disablegc")) {
+    //                         evaluator.commandDisableGC(t);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("enablegc")) {
+    //                         evaluator.commandEnableGC(t);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("save")) { // Undocumented command: useful for testing.
+    //                         evaluator.commandSave(t);
+    //                         showPrompt = false;        // asynchronous command
+    //                     } else if (cmd.equals("bytecodes")) { // Undocumented command: useful for testing.
+    //                         evaluator.commandBytecodes(t);
+    //                     } else if (cmd.equals("redefine")) {
+    //                         evaluator.commandRedefine(t);
+    //                     } else if (cmd.equals("pop")) {
+    //                         evaluator.commandPopFrames(t, false);
+    //                     } else if (cmd.equals("reenter")) {
+    //                         evaluator.commandPopFrames(t, true);
+    //                     } else if (cmd.equals("extension")) {
+    //                         evaluator.commandExtension(t);
+    //                     } else if (cmd.equals("exclude")) {
+    //                         evaluator.commandExclude(t);
+    //                     } else if (cmd.equals("read")) {
+    //                         readCommand(t);
+    //                     } else if (cmd.equals("sleep")) {
+    //                         evaluator.commandSleep(t);
+    //                     } else if (cmd.equals("help") || cmd.equals("?")) {
+    //                         help();
+    //                     } else if (cmd.equals("version")) {
+    //                         evaluator.commandVersion(progname,
+    //                                                  Bootstrap.virtualMachineManager());
+    //                     } else if (cmd.equals("quit") || cmd.equals("exit")) {
+    //                         if (handler != null) {
+    //                             handler.shutdown();
+    //                         }
+    //                         Env.shutdown();
+    //                     } else {
+    //                         MessageOutput.println("Unrecognized command.  Try help...", cmd);
+    //                     }
+    //                 } catch (VMCannotBeModifiedException rovm) {
+    //                     MessageOutput.println("Command is not supported on a read-only VM connection", cmd);
+    //                 } catch (UnsupportedOperationException uoe) {
+    //                     MessageOutput.println("Command is not supported on the target VM", cmd);
+    //                 } catch (VMNotConnectedException vmnse) {
+    //                     MessageOutput.println("Command not valid until the VM is started with the run command",
+    //                                           cmd);
+    //                 } catch (Exception e) {
+    //                     MessageOutput.printException("Internal exception:", e);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if (showPrompt) {
+    //         MessageOutput.printPrompt();
+    //     }
+    // }
 
     /*
      * Maintain a list of commands to execute each time the VM is suspended.
      */
-    void monitorCommand(StringTokenizer t) {
-        if (t.hasMoreTokens()) {
-            ++monitorCount;
-            monitorCommands.add(monitorCount + ": " + t.nextToken(""));
-        } else {
-            for (String cmd : monitorCommands) {
-                MessageOutput.printDirectln(cmd);// Special case: use printDirectln()
-            }
-        }
-    }
+    // void monitorCommand(StringTokenizer t) {
+    //     if (t.hasMoreTokens()) {
+    //         ++monitorCount;
+    //         monitorCommands.add(monitorCount + ": " + t.nextToken(""));
+    //     } else {
+    //         for (String cmd : monitorCommands) {
+    //             MessageOutput.printDirectln(cmd);// Special case: use printDirectln()
+    //         }
+    //     }
+    // }
 
-    void unmonitorCommand(StringTokenizer t) {
-        if (t.hasMoreTokens()) {
-            String monTok = t.nextToken();
-            int monNum;
-            try {
-                monNum = Integer.parseInt(monTok);
-            } catch (NumberFormatException exc) {
-                MessageOutput.println("Not a monitor number:", monTok);
-                return;
-            }
-            String monStr = monTok + ":";
-            for (String cmd : monitorCommands) {
-                StringTokenizer ct = new StringTokenizer(cmd);
-                if (ct.nextToken().equals(monStr)) {
-                    monitorCommands.remove(cmd);
-                    MessageOutput.println("Unmonitoring", cmd);
-                    return;
-                }
-            }
-            MessageOutput.println("No monitor numbered:", monTok);
-        } else {
-            MessageOutput.println("Usage: unmonitor <monitor#>");
-        }
-    }
+    // void unmonitorCommand(StringTokenizer t) {
+    //     if (t.hasMoreTokens()) {
+    //         String monTok = t.nextToken();
+    //         int monNum;
+    //         try {
+    //             monNum = Integer.parseInt(monTok);
+    //         } catch (NumberFormatException exc) {
+    //             MessageOutput.println("Not a monitor number:", monTok);
+    //             return;
+    //         }
+    //         String monStr = monTok + ":";
+    //         for (String cmd : monitorCommands) {
+    //             StringTokenizer ct = new StringTokenizer(cmd);
+    //             if (ct.nextToken().equals(monStr)) {
+    //                 monitorCommands.remove(cmd);
+    //                 MessageOutput.println("Unmonitoring", cmd);
+    //                 return;
+    //             }
+    //         }
+    //         MessageOutput.println("No monitor numbered:", monTok);
+    //     } else {
+    //         MessageOutput.println("Usage: unmonitor <monitor#>");
+    //     }
+    // }
 
 
-    void readCommand(StringTokenizer t) {
-        if (t.hasMoreTokens()) {
-            String cmdfname = t.nextToken();
-            if (!readCommandFile(new File(cmdfname))) {
-                MessageOutput.println("Could not open:", cmdfname);
-            }
-        } else {
-            MessageOutput.println("Usage: read <command-filename>");
-        }
-    }
+    // void readCommand(StringTokenizer t) {
+    //     if (t.hasMoreTokens()) {
+    //         String cmdfname = t.nextToken();
+    //         if (!readCommandFile(new File(cmdfname))) {
+    //             MessageOutput.println("Could not open:", cmdfname);
+    //         }
+    //     } else {
+    //         MessageOutput.println("Usage: read <command-filename>");
+    //     }
+    // }
 
     /**
      * Read and execute a command file.  Return true if the file was read
      * else false;
      */
-    boolean readCommandFile(File f) {
-        BufferedReader inFile = null;
-        try {
-            if (f.canRead()) {
-                // Process initial commands.
-                MessageOutput.println("*** Reading commands from", f.getPath());
-                inFile = new BufferedReader(new FileReader(f));
-                String ln;
-                while ((ln = inFile.readLine()) != null) {
-                    StringTokenizer t = new StringTokenizer(ln);
-                    if (t.hasMoreTokens()) {
-                        executeCommand(t);
-                    }
-                }
-            }
-        } catch (IOException e) {
-        } finally {
-            if (inFile != null) {
-                try {
-                    inFile.close();
-                } catch (Exception exc) {
-                }
-            }
-        }
-        return inFile != null;
-    }
+    // boolean readCommandFile(File f) {
+    //     BufferedReader inFile = null;
+    //     try {
+    //         if (f.canRead()) {
+    //             // Process initial commands.
+    //             MessageOutput.println("*** Reading commands from", f.getPath());
+    //             inFile = new BufferedReader(new FileReader(f));
+    //             String ln;
+    //             while ((ln = inFile.readLine()) != null) {
+    //                 StringTokenizer t = new StringTokenizer(ln);
+    //                 if (t.hasMoreTokens()) {
+    //                     executeCommand(t);
+    //                 }
+    //             }
+    //         }
+    //     } catch (IOException e) {
+    //     } finally {
+    //         if (inFile != null) {
+    //             try {
+    //                 inFile.close();
+    //             } catch (Exception exc) {
+    //             }
+    //         }
+    //     }
+    //     return inFile != null;
+    // }
 
     /**
      * Try to read commands from dir/fname, unless
@@ -645,110 +635,175 @@ public class TTY implements EventNotifier {
      * Return null if that file doesn't exist,
      * else return the canonical path of that file.
      */
-    String readStartupCommandFile(String dir, String fname, String canonPath) {
-        File dotInitFile = new File(dir, fname);
-        if (!dotInitFile.exists()) {
-            return null;
-        }
+    // String readStartupCommandFile(String dir, String fname, String canonPath) {
+    //     File dotInitFile = new File(dir, fname);
+    //     if (!dotInitFile.exists()) {
+    //         return null;
+    //     }
 
-        String myCanonFile;
-        try {
-            myCanonFile = dotInitFile.getCanonicalPath();
-        } catch (IOException ee) {
-            MessageOutput.println("Could not open:", dotInitFile.getPath());
-            return null;
-        }
-        if (canonPath == null || !canonPath.equals(myCanonFile)) {
-            if (!readCommandFile(dotInitFile)) {
-                MessageOutput.println("Could not open:", dotInitFile.getPath());
-            }
-        }
-        return myCanonFile;
-    }
+    //     String myCanonFile;
+    //     try {
+    //         myCanonFile = dotInitFile.getCanonicalPath();
+    //     } catch (IOException ee) {
+    //         MessageOutput.println("Could not open:", dotInitFile.getPath());
+    //         return null;
+    //     }
+    //     if (canonPath == null || !canonPath.equals(myCanonFile)) {
+    //         if (!readCommandFile(dotInitFile)) {
+    //             MessageOutput.println("Could not open:", dotInitFile.getPath());
+    //         }
+    //     }
+    //     return myCanonFile;
+    // }
 
 
     public TTY() throws Exception {
-
-        MessageOutput.println("Initializing progname", progname);
-
+        Env.notifier = this;
         if (Env.connection().isOpen() && Env.vm().canBeModified()) {
             /*
              * Connection opened on startup. Start event handler
              * immediately, telling it (through arg 2) to stop on the
              * VM start event.
              */
-            this.handler = new EventHandler(this, true);
+            Env.handler = new EventHandler(Env.notifier, true);
         }
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		DebugEngine engine = new DebugEngine();
+		engine.runScript(String.join("\n",
+            // generic commands
+			".load commands      jdbg.DebugCommandCommands",
+			".load echo          jdbg.DebugCommandEcho",
+			".load read          jdbg.DebugCommandDotRun",
+			".load sleep         jdbg.DebugCommandSleep",
+            // JDBG specific commands
+			".load bytecodes     jdbg.DebugCommandBytecodes",
+			".load catch         jdbg.DebugCommandCatch",
+			".load classes       jdbg.DebugCommandClasses",
+			".load class         jdbg.DebugCommandClass",
+			".load classpath     jdbg.DebugCommandClassPath",
+			".load clear         jdbg.DebugCommandClear",
+			".load connectors    jdbg.DebugCommandConnectors",
+			".load cont          jdbg.DebugCommandCont",
+			".load disablegc     jdbg.DebugCommandDisableGC",
+			".load down          jdbg.DebugCommandDown",
+			".load dump          jdbg.DebugCommandDump",
+			".load enablegc      jdbg.DebugCommandEnableGC",
+			".load eval          jdbg.DebugCommandPrint",
+			".load exit          jdbg.DebugCommandQuit",
+			".load exclude       jdbg.DebugCommandExclude",
+			".load extension     jdbg.DebugCommandExtension",
+			".load fields        jdbg.DebugCommandFields",
+			".load gc            jdbg.DebugCommandGC",
+			".load help          jdbg.DebugCommandHelp",
+			".load ignore        jdbg.DebugCommandIgnore",
+			".load interrupt     jdbg.DebugCommandInterrupt",
+			".load kill          jdbg.DebugCommandKill",
+			".load lines         jdbg.DebugCommandLines",
+			".load list          jdbg.DebugCommandList",
+			".load load          jdbg.DebugCommandLoad",
+			".load locals        jdbg.DebugCommandLocals",
+			".load lock          jdbg.DebugCommandLock",
+			".load memory        jdbg.DebugCommandMemory",
+			".load methods       jdbg.DebugCommandMethods",
+			".load next          jdbg.DebugCommandNext",
+			".load pop           jdbg.DebugCommandPop",
+			".load print         jdbg.DebugCommandPrint",
+			".load quit          jdbg.DebugCommandQuit",
+			".load redefine      jdbg.DebugCommandRedefine",
+			".load reenter       jdbg.DebugCommandReenter",
+			".load resume        jdbg.DebugCommandResume",
+			".load run           jdbg.DebugCommandRun",
+			".load save          jdbg.DebugCommandSave",
+			".load set           jdbg.DebugCommandSet",
+			".load sourcepath    jdbg.DebugCommandSourcePath",
+			".load step          jdbg.DebugCommandStep",
+			".load stop          jdbg.DebugCommandStop",
+			".load suspend       jdbg.DebugCommandSuspend",
+			".load thread        jdbg.DebugCommandThread",
+			".load threadgroup   jdbg.DebugCommandThreadGroup",
+			".load threadgroups  jdbg.DebugCommandThreadGroups",
+			".load threadlocks   jdbg.DebugCommandThreadLocks",
+			".load threads       jdbg.DebugCommandThreads",
+			".load trace         jdbg.DebugCommandTrace",
+			".load untrace       jdbg.DebugCommandUntrace",
+			".load unwatch       jdbg.DebugCommandUnwatch",
+			".load up            jdbg.DebugCommandUp",
+			".load use           jdbg.DebugCommandSourcePath",
+			".load version       jdbg.DebugCommandVersion",
+			".load watch         jdbg.DebugCommandWatch",
+			".load where         jdbg.DebugCommandWhere",
+			".load wherei        jdbg.DebugCommandWherei",
+			""));
+		engine.loop();
+        // try {
+        //     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-            String lastLine = null;
+        //     String lastLine = null;
 
-            Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
+        //     // Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 
-            /*
-             * Read start up files.  This mimics the behavior
-             * of gdb which will read both ~/.gdbinit and then
-             * ./.gdbinit if they exist.  We have the twist that
-             * we allow two different names, so we do this:
-             *  if ~/jdb.ini exists,
-             *      read it
-             *  else if ~/.jdbrc exists,
-             *      read it
-             *
-             *  if ./jdb.ini exists,
-             *      if it hasn't been read, read it
-             *      It could have been read above because ~ == .
-             *      or because of symlinks, ...
-             *  else if ./jdbrx exists
-             *      if it hasn't been read, read it
-             */
-            {
-                String userHome = System.getProperty("user.home");
-                String canonPath;
+        //     /*
+        //      * Read start up files.  This mimics the behavior
+        //      * of gdb which will read both ~/.gdbinit and then
+        //      * ./.gdbinit if they exist.  We have the twist that
+        //      * we allow two different names, so we do this:
+        //      *  if ~/jdb.ini exists,
+        //      *      read it
+        //      *  else if ~/.jdbrc exists,
+        //      *      read it
+        //      *
+        //      *  if ./jdb.ini exists,
+        //      *      if it hasn't been read, read it
+        //      *      It could have been read above because ~ == .
+        //      *      or because of symlinks, ...
+        //      *  else if ./jdbrx exists
+        //      *      if it hasn't been read, read it
+        //      */
+        //     {
+        //         String userHome = System.getProperty("user.home");
+        //         String canonPath;
 
-                if ((canonPath = readStartupCommandFile(userHome, "jdb.ini", null)) == null) {
-                    // Doesn't exist, try alternate spelling
-                    canonPath = readStartupCommandFile(userHome, ".jdbrc", null);
-                }
+        //         if ((canonPath = readStartupCommandFile(userHome, "jdb.ini", null)) == null) {
+        //             // Doesn't exist, try alternate spelling
+        //             canonPath = readStartupCommandFile(userHome, ".jdbrc", null);
+        //         }
 
-                String userDir = System.getProperty("user.dir");
-                if (readStartupCommandFile(userDir, "jdb.ini", canonPath) == null) {
-                    // Doesn't exist, try alternate spelling
-                    readStartupCommandFile(userDir, ".jdbrc", canonPath);
-                }
-            }
+        //         String userDir = System.getProperty("user.dir");
+        //         if (readStartupCommandFile(userDir, "jdb.ini", canonPath) == null) {
+        //             // Doesn't exist, try alternate spelling
+        //             readStartupCommandFile(userDir, ".jdbrc", canonPath);
+        //         }
+        //     }
 
-            // Process interactive commands.
-            MessageOutput.printPrompt();
-            while (true) {
-                String ln = in.readLine();
-                if (ln == null) {
-                    /*
-                     *  Jdb is being shutdown because debuggee exited, ignore any 'null'
-                     *  returned by readLine() during shutdown. JDK-8154144.
-                     */
-                    if (!isShuttingDown()) {
-                        MessageOutput.println("Input stream closed.");
-                    }
-                    ln = "quit";
-                }
+        //     // Process interactive commands.
+        //     MessageOutput.printPrompt();
+        //     while (true) {
+        //         String ln = in.readLine();
+        //         if (ln == null) {
+        //             /*
+        //              *  Jdb is being shutdown because debuggee exited, ignore any 'null'
+        //              *  returned by readLine() during shutdown. JDK-8154144.
+        //              */
+        //             if (!isShuttingDown()) {
+        //                 MessageOutput.println("Input stream closed.");
+        //             }
+        //             ln = "quit";
+        //         }
 
-                if (ln.startsWith("!!") && lastLine != null) {
-                    ln = lastLine + ln.substring(2);
-                    MessageOutput.printDirectln(ln);// Special case: use printDirectln()
-                }
+        //         if (ln.startsWith("!!") && lastLine != null) {
+        //             ln = lastLine + ln.substring(2);
+        //             MessageOutput.printDirectln(ln);// Special case: use printDirectln()
+        //         }
 
-                StringTokenizer t = new StringTokenizer(ln);
-                if (t.hasMoreTokens()) {
-                    lastLine = ln;
-                    executeCommand(t);
-                } else {
-                    MessageOutput.printPrompt();
-                }
-            }
-        } catch (VMDisconnectedException e) {
-            handler.handleDisconnectedException();
-        }
+        //         StringTokenizer t = new StringTokenizer(ln);
+        //         if (t.hasMoreTokens()) {
+        //             lastLine = ln;
+        //             executeCommand(t);
+        //         } else {
+        //             MessageOutput.printPrompt();
+        //         }
+        //     }
+        // } catch (VMDisconnectedException e) {
+        //     handler.handleDisconnectedException();
+        // }
     }
 }

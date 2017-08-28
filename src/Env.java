@@ -9,6 +9,8 @@ import java.io.*;
 
 
 class Env {
+    static EventHandler handler = null;
+    static EventNotifier notifier = null;
 
     static EventRequestSpecList specList = new EventRequestSpecList();
 

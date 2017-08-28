@@ -371,18 +371,6 @@ class Commands {
         }
     }
 
-    void commandSleep(StringTokenizer t) {
-        long millis = 1000;
-        if (t.hasMoreTokens()) {
-            millis = Long.parseLong(t.nextToken(), 10);
-        }
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            // silently ignore
-        }
-    }
-
     void commandThreads(StringTokenizer t) {
         if (!t.hasMoreTokens()) {
             printThreadGroup(ThreadInfo.group());
