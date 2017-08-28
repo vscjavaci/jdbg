@@ -1555,43 +1555,36 @@ class Commands {
         }
     }
 
-    /* Print a specified reference.
-     */
-    void doPrint(StringTokenizer t, boolean dumpObject) {
-        if (!t.hasMoreTokens()) {
-            MessageOutput.println("No objects specified.");
-            return;
-        }
-
-        while (t.hasMoreTokens()) {
-            String expr = t.nextToken("");
-            Value val = evaluate(expr);
-            if (val == null) {
-                MessageOutput.println("expr is null", expr.toString());
-            } else if (dumpObject && (val instanceof ObjectReference) &&
-                       !(val instanceof StringReference)) {
-                ObjectReference obj = (ObjectReference)val;
-                ReferenceType refType = obj.referenceType();
-                MessageOutput.println("expr is value",
-                                      new Object [] {expr.toString(),
-                                                     MessageOutput.format("grouping begin character")});
-                dump(obj, refType, refType);
-                MessageOutput.println("grouping end character");
-            } else {
-                  String strVal = getStringValue();
-                  if (strVal != null) {
-                     MessageOutput.println("expr is value", new Object [] {expr.toString(),
-                                                                      strVal});
-                   }
-            }
-        }
-    }
-
     void commandPrint(final StringTokenizer t, final boolean dumpObject) {
         new AsyncExecution() {
                 @Override
                 void action() {
-                    doPrint(t, dumpObject);
+                    if (!t.hasMoreTokens()) {
+                        MessageOutput.println("No objects specified.");
+                        return;
+                    }
+
+                    while (t.hasMoreTokens()) {
+                        String expr = t.nextToken("");
+                        Value val = evaluate(expr);
+                        if (val == null) {
+                            MessageOutput.println("expr is null", expr.toString());
+                        } else if (dumpObject && (val instanceof ObjectReference) &&
+                                   !(val instanceof StringReference)) {
+                            ObjectReference obj = (ObjectReference)val;
+                            ReferenceType refType = obj.referenceType();
+                            MessageOutput.println("expr is value",
+                                                  new Object [] {expr.toString(),
+                                                                 MessageOutput.format("grouping begin character")});
+                            dump(obj, refType, refType);
+                            MessageOutput.println("grouping end character");
+                        } else {
+                              String strVal = getStringValue();
+                              if (strVal != null) {
+                                 System.out.println(strVal);
+                               }
+                        }
+                    }
                 }
             };
     }
