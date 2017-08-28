@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 import java.io.File;
 
 public class MainClass {
-    private static final String progname = "jdbg";
+    public static final String progname = "jdbg";
 
     private static void usage() {
         MessageOutput.println("zz usage text", new Object [] {progname,
