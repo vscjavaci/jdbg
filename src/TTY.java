@@ -6,12 +6,6 @@ import com.sun.jdi.request.*;
 import com.sun.jdi.connect.*;
 
 public class TTY implements EventNotifier {
-    /**
-     * List of Strings to execute at each stop.
-     */
-    // private List<String> monitorCommands = new ArrayList<String>();
-    // private int monitorCount = 0;
-
     private volatile boolean shuttingDown = false;
 
     public void setShuttingDown(boolean s) {
@@ -215,9 +209,9 @@ public class TTY implements EventNotifier {
         printBaseLocation(theEvent.thread().name(), theEvent.location());
     }
 
-    void help() {
-        MessageOutput.println("zz help text");
-    }
+    // void help() {
+    //     MessageOutput.println("zz help text");
+    // }
 
     // private static final String[][] commandList = {
     //     /*
@@ -584,78 +578,6 @@ public class TTY implements EventNotifier {
     //         MessageOutput.println("Usage: unmonitor <monitor#>");
     //     }
     // }
-
-
-    // void readCommand(StringTokenizer t) {
-    //     if (t.hasMoreTokens()) {
-    //         String cmdfname = t.nextToken();
-    //         if (!readCommandFile(new File(cmdfname))) {
-    //             MessageOutput.println("Could not open:", cmdfname);
-    //         }
-    //     } else {
-    //         MessageOutput.println("Usage: read <command-filename>");
-    //     }
-    // }
-
-    /**
-     * Read and execute a command file.  Return true if the file was read
-     * else false;
-     */
-    // boolean readCommandFile(File f) {
-    //     BufferedReader inFile = null;
-    //     try {
-    //         if (f.canRead()) {
-    //             // Process initial commands.
-    //             MessageOutput.println("*** Reading commands from", f.getPath());
-    //             inFile = new BufferedReader(new FileReader(f));
-    //             String ln;
-    //             while ((ln = inFile.readLine()) != null) {
-    //                 StringTokenizer t = new StringTokenizer(ln);
-    //                 if (t.hasMoreTokens()) {
-    //                     executeCommand(t);
-    //                 }
-    //             }
-    //         }
-    //     } catch (IOException e) {
-    //     } finally {
-    //         if (inFile != null) {
-    //             try {
-    //                 inFile.close();
-    //             } catch (Exception exc) {
-    //             }
-    //         }
-    //     }
-    //     return inFile != null;
-    // }
-
-    /**
-     * Try to read commands from dir/fname, unless
-     * the canonical path passed in is the same as that
-     * for dir/fname.
-     * Return null if that file doesn't exist,
-     * else return the canonical path of that file.
-     */
-    // String readStartupCommandFile(String dir, String fname, String canonPath) {
-    //     File dotInitFile = new File(dir, fname);
-    //     if (!dotInitFile.exists()) {
-    //         return null;
-    //     }
-
-    //     String myCanonFile;
-    //     try {
-    //         myCanonFile = dotInitFile.getCanonicalPath();
-    //     } catch (IOException ee) {
-    //         MessageOutput.println("Could not open:", dotInitFile.getPath());
-    //         return null;
-    //     }
-    //     if (canonPath == null || !canonPath.equals(myCanonFile)) {
-    //         if (!readCommandFile(dotInitFile)) {
-    //             MessageOutput.println("Could not open:", dotInitFile.getPath());
-    //         }
-    //     }
-    //     return myCanonFile;
-    // }
-
 
     public TTY() throws Exception {
         Env.notifier = this;
