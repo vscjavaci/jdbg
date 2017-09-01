@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class DebugEngine implements Runnable {
     public static final int JDBG_UNKNOWN_ERROR = -0x7fffffff;
@@ -133,13 +134,20 @@ public class DebugEngine implements Runnable {
         Thread debugEngineThread = new Thread(this, "debug-engine-command-processing-loop");
         debugEngineThread.start();
 
-        // run the initialization script
+        // run the bootstrap script
         this.sync();
 
-        // run jdbg.ini file if it exists
-        if (new File("jdbg.ini").exists()) {
-            this.runScript(".run jdbg.ini");
-            this.sync();
+        // run the initialization script if it exists
+        {
+            String initScriptPath = "jdbg.ini";
+            Map<String, String> envvar = System.getenv();
+            if (envvar.containsKey("JDBG_INIT_FILE")) {
+                initScriptPath = envvar.get("JDBG_INIT_FILE");
+            }
+            if (new File(initScriptPath).exists()) {
+                this.runScript(String.format(".run %s", initScriptPath));
+                this.sync();
+            }
         }
 
         if (JDBG_COMMAND_QUIT == m_status) {
