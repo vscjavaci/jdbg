@@ -5,7 +5,7 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
 import com.sun.jdi.connect.*;
 
-public class TTY implements EventNotifier {
+public class DebugSessionJdi extends DebugSession {
     private volatile boolean shuttingDown = false;
 
     public void setShuttingDown(boolean s) {
@@ -579,15 +579,15 @@ public class TTY implements EventNotifier {
     //     }
     // }
 
-    public TTY() throws Exception {
-        Env.notifier = this;
+    public DebugSessionJdi() throws Exception {
+        Env.session = this;
         if (Env.connection().isOpen() && Env.vm().canBeModified()) {
             /*
              * Connection opened on startup. Start event handler
              * immediately, telling it (through arg 2) to stop on the
              * VM start event.
              */
-            Env.handler = new EventHandler(Env.notifier, true);
+            Env.handler = new EventHandler(Env.session, true);
         }
         // try {
         //     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));

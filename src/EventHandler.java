@@ -6,15 +6,15 @@ import com.sun.jdi.request.EventRequest;
 
 public class EventHandler implements Runnable {
 
-    EventNotifier notifier;
+    DebugSession session;
     Thread thread;
     volatile boolean connected = true;
     boolean completed = false;
     String shutdownMessageKey;
     boolean stopOnVMStart;
 
-    EventHandler(EventNotifier notifier, boolean stopOnVMStart) {
-        this.notifier = notifier;
+    EventHandler(DebugSession session, boolean stopOnVMStart) {
+        this.session = session;
         this.stopOnVMStart = stopOnVMStart;
         this.thread = new Thread(this, "event-handler");
         this.thread.start();
@@ -44,7 +44,7 @@ public class EventHandler implements Runnable {
                     eventSet.resume();
                 } else if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
                     setCurrentThread(eventSet);
-                    notifier.vmInterrupted();
+                    session.vmInterrupted();
                 }
             } catch (InterruptedException exc) {
                 // Do nothing. Any changes will be seen at top of loop.
@@ -100,7 +100,7 @@ public class EventHandler implements Runnable {
             /*
              * Inform jdb command line processor that jdb is being shutdown. JDK-8154144.
              */
-            ((TTY)notifier).setShuttingDown(true);
+            ((DebugSessionJdi)session).setShuttingDown(true);
             Env.shutdown(shutdownMessageKey);
             return false;
         } else {
@@ -170,42 +170,42 @@ public class EventHandler implements Runnable {
 
     private boolean vmStartEvent(Event event)  {
         VMStartEvent se = (VMStartEvent)event;
-        notifier.vmStartEvent(se);
+        session.vmStartEvent(se);
         return stopOnVMStart;
     }
 
     private boolean breakpointEvent(Event event)  {
         BreakpointEvent be = (BreakpointEvent)event;
-        notifier.breakpointEvent(be);
+        session.breakpointEvent(be);
         return true;
     }
 
     private boolean methodEntryEvent(Event event)  {
         MethodEntryEvent me = (MethodEntryEvent)event;
-        notifier.methodEntryEvent(me);
+        session.methodEntryEvent(me);
         return true;
     }
 
     private boolean methodExitEvent(Event event)  {
         MethodExitEvent me = (MethodExitEvent)event;
-        return notifier.methodExitEvent(me);
+        return session.methodExitEvent(me);
     }
 
     private boolean fieldWatchEvent(Event event)  {
         WatchpointEvent fwe = (WatchpointEvent)event;
-        notifier.fieldWatchEvent(fwe);
+        session.fieldWatchEvent(fwe);
         return true;
     }
 
     private boolean stepEvent(Event event)  {
         StepEvent se = (StepEvent)event;
-        notifier.stepEvent(se);
+        session.stepEvent(se);
         return true;
     }
 
     private boolean classPrepareEvent(Event event)  {
         ClassPrepareEvent cle = (ClassPrepareEvent)event;
-        notifier.classPrepareEvent(cle);
+        session.classPrepareEvent(cle);
 
         if (!Env.specList.resolve(cle)) {
             MessageOutput.lnprint("Stopping due to deferred breakpoint errors.");
@@ -217,13 +217,13 @@ public class EventHandler implements Runnable {
 
     private boolean classUnloadEvent(Event event)  {
         ClassUnloadEvent cue = (ClassUnloadEvent)event;
-        notifier.classUnloadEvent(cue);
+        session.classUnloadEvent(cue);
         return false;
     }
 
     private boolean exceptionEvent(Event event) {
         ExceptionEvent ee = (ExceptionEvent)event;
-        notifier.exceptionEvent(ee);
+        session.exceptionEvent(ee);
         return true;
     }
 
@@ -236,19 +236,19 @@ public class EventHandler implements Runnable {
     private boolean threadStartEvent(Event event) {
         ThreadStartEvent tse = (ThreadStartEvent)event;
         ThreadInfo.addThread(tse.thread());
-        notifier.threadStartEvent(tse);
+        session.threadStartEvent(tse);
         return false;
     }
 
     public boolean vmDeathEvent(Event event) {
         shutdownMessageKey = "The application exited";
-        notifier.vmDeathEvent((VMDeathEvent)event);
+        session.vmDeathEvent((VMDeathEvent)event);
         return false;
     }
 
     public boolean vmDisconnectEvent(Event event) {
         shutdownMessageKey = "The application has been disconnected";
-        notifier.vmDisconnectEvent((VMDisconnectEvent)event);
+        session.vmDisconnectEvent((VMDisconnectEvent)event);
         return false;
     }
 }

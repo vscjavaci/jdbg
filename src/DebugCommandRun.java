@@ -15,7 +15,7 @@ public class DebugCommandRun extends DebugCommand {
          * arg 2 is false).
          */
         if ((Env.handler == null) && Env.connection().isOpen()) {
-            Env.handler = new EventHandler(Env.notifier, false);
+            Env.handler = new EventHandler(Env.session, false);
         }
         return DebugEngine.JDBG_COMMAND_SUCCEEDED;
     }
