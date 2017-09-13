@@ -23,37 +23,14 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public void vmDeathEvent(VMDeathEvent e)  {
-    }
-
-    @Override
-    public void vmDisconnectEvent(VMDisconnectEvent e)  {
-    }
-
-    @Override
-    public void threadStartEvent(ThreadStartEvent e)  {
-    }
-
-    @Override
-    public void threadDeathEvent(ThreadDeathEvent e)  {
-    }
-
-    @Override
-    public void classPrepareEvent(ClassPrepareEvent e)  {
-    }
-
-    @Override
-    public void classUnloadEvent(ClassUnloadEvent e)  {
-    }
-
-    @Override
-    public void breakpointEvent(BreakpointEvent be)  {
+    public boolean breakpointEvent(BreakpointEvent be)  {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Breakpoint hit:");
+        return true;
     }
 
     @Override
-    public void fieldWatchEvent(WatchpointEvent fwe)  {
+    public boolean fieldWatchEvent(WatchpointEvent fwe)  {
         Field field = fwe.field();
         ObjectReference obj = fwe.object();
         Thread.yield();  // fetch output
@@ -66,16 +43,18 @@ public class DebugSessionJdi extends DebugSession {
         } else {
             MessageOutput.lnprint("Field access encountered", field.toString());
         }
+        return true;
     }
 
     @Override
-    public void stepEvent(StepEvent se)  {
+    public boolean stepEvent(StepEvent se)  {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Step completed:");
+        return true;
     }
 
     @Override
-    public void exceptionEvent(ExceptionEvent ee) {
+    public boolean exceptionEvent(ExceptionEvent ee) {
         Thread.yield();  // fetch output
         Location catchLocation = ee.catchLocation();
         if (catchLocation == null) {
@@ -86,10 +65,11 @@ public class DebugSessionJdi extends DebugSession {
                                   new Object [] {ee.exception().referenceType().name(),
                                                  Commands.locationString(catchLocation)});
         }
+        return true;
     }
 
     @Override
-    public void methodEntryEvent(MethodEntryEvent me) {
+    public boolean methodEntryEvent(MethodEntryEvent me) {
         Thread.yield();  // fetch output
         /*
          * These can be very numerous, so be as efficient as possible.
@@ -104,6 +84,7 @@ public class DebugSessionJdi extends DebugSession {
             MessageOutput.print("Method entered:");
             printLocationOfEvent(me);
         }
+        return true;
     }
 
     @Override

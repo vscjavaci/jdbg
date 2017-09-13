@@ -3,22 +3,27 @@ package jdbg;
 import com.sun.jdi.event.*;
 
 public abstract class DebugSession {
-    public abstract void vmStartEvent(VMStartEvent e);
-    public abstract void vmDeathEvent(VMDeathEvent e);
-    public abstract void vmDisconnectEvent(VMDisconnectEvent e);
+    public boolean breakpointEvent(BreakpointEvent event) { return true; }
+    public boolean classPrepareEvent(ClassPrepareEvent event) {
+        if (!Env.specList.resolve(event)) {
+            MessageOutput.lnprint("Stopping due to deferred breakpoint errors.");
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    public abstract void threadStartEvent(ThreadStartEvent e);
-    public abstract void threadDeathEvent(ThreadDeathEvent e);
+    public boolean classUnloadEvent(ClassUnloadEvent event) { return false; }
+    public boolean exceptionEvent(ExceptionEvent event) { return true; }
+    public boolean fieldWatchEvent(WatchpointEvent event) { return true; }
+    public boolean methodEntryEvent(MethodEntryEvent event) { return false; }
+    public boolean methodExitEvent(MethodExitEvent event) { return false; }
+    public boolean stepEvent(StepEvent event) { return true; }
+    public boolean threadDeathEvent(ThreadDeathEvent event) { return false; }
+    public boolean threadStartEvent(ThreadStartEvent event) { return false; }
+    public boolean vmDeathEvent(VMDeathEvent event) { return false; }
+    public boolean vmDisconnectEvent(VMDisconnectEvent event) { return false; }
+    public abstract void vmStartEvent(VMStartEvent event);
 
-    public abstract void classPrepareEvent(ClassPrepareEvent e);
-    public abstract void classUnloadEvent(ClassUnloadEvent e);
-
-    public abstract void breakpointEvent(BreakpointEvent e);
-    public abstract void fieldWatchEvent(WatchpointEvent e);
-    public abstract void stepEvent(StepEvent e);
-    public abstract void exceptionEvent(ExceptionEvent e);
-    public abstract void methodEntryEvent(MethodEntryEvent e);
-    public abstract boolean methodExitEvent(MethodExitEvent e);
-
-    public abstract void vmInterrupted();
+    public void vmInterrupted() {}
 }
