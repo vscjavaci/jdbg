@@ -61,27 +61,30 @@ public class EventHandler implements Runnable {
 
     private boolean handleEvent(Event event) {
         if (event instanceof ExceptionEvent) {
-            return exceptionEvent((ExceptionEvent)event);
+            return session.exceptionEvent((ExceptionEvent)event);
         } else if (event instanceof BreakpointEvent) {
-            return breakpointEvent((BreakpointEvent)event);
+            return session.breakpointEvent((BreakpointEvent)event);
         } else if (event instanceof WatchpointEvent) {
-            return fieldWatchEvent((WatchpointEvent)event);
+            return session.fieldWatchEvent((WatchpointEvent)event);
         } else if (event instanceof StepEvent) {
-            return stepEvent((StepEvent)event);
+            return session.stepEvent((StepEvent)event);
         } else if (event instanceof MethodEntryEvent) {
-            return methodEntryEvent((MethodEntryEvent)event);
+            return session.methodEntryEvent((MethodEntryEvent)event);
         } else if (event instanceof MethodExitEvent) {
-            return methodExitEvent((MethodExitEvent)event);
+            return session.methodExitEvent((MethodExitEvent)event);
         } else if (event instanceof ClassPrepareEvent) {
-            return classPrepareEvent((ClassPrepareEvent)event);
+            return session.classPrepareEvent((ClassPrepareEvent)event);
         } else if (event instanceof ClassUnloadEvent) {
-            return classUnloadEvent((ClassUnloadEvent)event);
+            return session.classUnloadEvent((ClassUnloadEvent)event);
         } else if (event instanceof ThreadStartEvent) {
-            return threadStartEvent((ThreadStartEvent)event);
+            ThreadInfo.addThread(((ThreadStartEvent)event).thread());
+            return session.threadStartEvent((ThreadStartEvent)event);
         } else if (event instanceof ThreadDeathEvent) {
-            return threadDeathEvent((ThreadDeathEvent)event);
+            ThreadInfo.removeThread(((ThreadDeathEvent)event).thread());
+            return session.threadDeathEvent((ThreadDeathEvent)event);
         } else if (event instanceof VMStartEvent) {
-            return vmStartEvent((VMStartEvent)event);
+            session.vmStartEvent((VMStartEvent)event);
+            return stopOnVMStart;
         } else {
             return handleExitEvent(event);
         }
@@ -90,12 +93,14 @@ public class EventHandler implements Runnable {
     private boolean vmDied = false;
     private boolean handleExitEvent(Event event) {
         if (event instanceof VMDeathEvent) {
+            shutdownMessageKey = "The application exited";
             vmDied = true;
-            return vmDeathEvent((VMDeathEvent)event);
+            return session.vmDeathEvent((VMDeathEvent)event);
         } else if (event instanceof VMDisconnectEvent) {
             connected = false;
             if (!vmDied) {
-                vmDisconnectEvent((VMDisconnectEvent)event);
+                shutdownMessageKey = "The application has been disconnected";
+                session.vmDisconnectEvent((VMDisconnectEvent)event);
             }
             /*
              * Inform jdb command line processor that jdb is being shutdown. JDK-8154144.
@@ -166,65 +171,5 @@ public class EventHandler implements Runnable {
     private void setCurrentThread(ThreadReference thread) {
         ThreadInfo.invalidateAll();
         ThreadInfo.setCurrentThread(thread);
-    }
-
-    private boolean vmStartEvent(VMStartEvent event)  {
-        session.vmStartEvent(event);
-        return stopOnVMStart;
-    }
-
-    private boolean breakpointEvent(BreakpointEvent event)  {
-        return session.breakpointEvent(event);
-    }
-
-    private boolean methodEntryEvent(Event event)  {
-        MethodEntryEvent me = (MethodEntryEvent)event;
-        return session.methodEntryEvent(me);
-    }
-
-    private boolean methodExitEvent(MethodExitEvent event)  {
-        return session.methodExitEvent(event);
-    }
-
-    private boolean fieldWatchEvent(WatchpointEvent event)  {
-        return session.fieldWatchEvent(event);
-    }
-
-    private boolean stepEvent(Event event)  {
-        StepEvent se = (StepEvent)event;
-        return session.stepEvent(se);
-    }
-
-    private boolean classPrepareEvent(ClassPrepareEvent event)  {
-        return session.classPrepareEvent(event);
-    }
-
-    private boolean classUnloadEvent(ClassUnloadEvent event)  {
-        return session.classUnloadEvent(event);
-    }
-
-    private boolean exceptionEvent(ExceptionEvent event) {
-        return session.exceptionEvent(event);
-    }
-
-    private boolean threadDeathEvent(ThreadDeathEvent event) {
-        ThreadInfo.removeThread(event.thread());
-        return session.threadDeathEvent(event);
-    }
-
-    private boolean threadStartEvent(Event event) {
-        ThreadStartEvent tse = (ThreadStartEvent)event;
-        ThreadInfo.addThread(tse.thread());
-        return session.threadStartEvent(tse);
-    }
-
-    public boolean vmDeathEvent(VMDeathEvent event) {
-        shutdownMessageKey = "The application exited";
-        return session.vmDeathEvent(event);
-    }
-
-    public boolean vmDisconnectEvent(VMDisconnectEvent event) {
-        shutdownMessageKey = "The application has been disconnected";
-        return session.vmDisconnectEvent(event);
     }
 }

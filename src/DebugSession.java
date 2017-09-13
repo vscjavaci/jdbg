@@ -22,8 +22,8 @@ public abstract class DebugSession {
     public boolean threadDeathEvent(ThreadDeathEvent event) { return false; }
     public boolean threadStartEvent(ThreadStartEvent event) { return false; }
     public boolean vmDeathEvent(VMDeathEvent event) { return false; }
-    public boolean vmDisconnectEvent(VMDisconnectEvent event) { return false; }
-    public abstract void vmStartEvent(VMStartEvent event);
+    public void vmDisconnectEvent(VMDisconnectEvent event) {}
+    public void vmStartEvent(VMStartEvent event) {}
 
     public void vmInterrupted() {}
 }

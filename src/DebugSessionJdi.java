@@ -17,29 +17,29 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public void vmStartEvent(VMStartEvent se)  {
+    public void vmStartEvent(VMStartEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("VM Started:");
     }
 
     @Override
-    public boolean breakpointEvent(BreakpointEvent be)  {
+    public boolean breakpointEvent(BreakpointEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Breakpoint hit:");
         return true;
     }
 
     @Override
-    public boolean fieldWatchEvent(WatchpointEvent fwe)  {
-        Field field = fwe.field();
-        ObjectReference obj = fwe.object();
+    public boolean fieldWatchEvent(WatchpointEvent event) {
+        Field field = event.field();
+        ObjectReference obj = event.object();
         Thread.yield();  // fetch output
 
-        if (fwe instanceof ModificationWatchpointEvent) {
+        if (event instanceof ModificationWatchpointEvent) {
             MessageOutput.lnprint("Field access encountered before after",
                                   new Object [] {field,
-                                                 fwe.valueCurrent(),
-                                                 ((ModificationWatchpointEvent)fwe).valueToBe()});
+                                                 event.valueCurrent(),
+                                                 ((ModificationWatchpointEvent)event).valueToBe()});
         } else {
             MessageOutput.lnprint("Field access encountered", field.toString());
         }
@@ -47,72 +47,72 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public boolean stepEvent(StepEvent se)  {
+    public boolean stepEvent(StepEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Step completed:");
         return true;
     }
 
     @Override
-    public boolean exceptionEvent(ExceptionEvent ee) {
+    public boolean exceptionEvent(ExceptionEvent event) {
         Thread.yield();  // fetch output
-        Location catchLocation = ee.catchLocation();
+        Location catchLocation = event.catchLocation();
         if (catchLocation == null) {
             MessageOutput.lnprint("Exception occurred uncaught",
-                                  ee.exception().referenceType().name());
+                                  event.exception().referenceType().name());
         } else {
             MessageOutput.lnprint("Exception occurred caught",
-                                  new Object [] {ee.exception().referenceType().name(),
+                                  new Object [] {event.exception().referenceType().name(),
                                                  Commands.locationString(catchLocation)});
         }
         return true;
     }
 
     @Override
-    public boolean methodEntryEvent(MethodEntryEvent me) {
+    public boolean methodEntryEvent(MethodEntryEvent event) {
         Thread.yield();  // fetch output
         /*
          * These can be very numerous, so be as efficient as possible.
          * If we are stopping here, then we will see the normal location
          * info printed.
          */
-        if (me.request().suspendPolicy() != EventRequest.SUSPEND_NONE) {
+        if (event.request().suspendPolicy() != EventRequest.SUSPEND_NONE) {
             // We are stopping; the name will be shown by the normal mechanism
             MessageOutput.lnprint("Method entered:");
         } else {
             // We aren't stopping, show the name
             MessageOutput.print("Method entered:");
-            printLocationOfEvent(me);
+            printLocationOfEvent(event);
         }
         return true;
     }
 
     @Override
-    public boolean methodExitEvent(MethodExitEvent me) {
+    public boolean methodExitEvent(MethodExitEvent event) {
         Thread.yield();  // fetch output
         /*
          * These can be very numerous, so be as efficient as possible.
          */
         Method mmm = Env.atExitMethod();
-        Method meMethod = me.method();
+        Method meMethod = event.method();
 
         if (mmm == null || mmm.equals(meMethod)) {
             // Either we are not tracing a specific method, or we are
             // and we are exitting that method.
 
-            if (me.request().suspendPolicy() != EventRequest.SUSPEND_NONE) {
+            if (event.request().suspendPolicy() != EventRequest.SUSPEND_NONE) {
                 // We will be stopping here, so do a newline
                 MessageOutput.println();
             }
             if (Env.vm().canGetMethodReturnValues()) {
-                MessageOutput.print("Method exitedValue:", me.returnValue() + "");
+                MessageOutput.print("Method exitedValue:", event.returnValue() + "");
             } else {
                 MessageOutput.print("Method exited:");
             }
 
-            if (me.request().suspendPolicy() == EventRequest.SUSPEND_NONE) {
+            if (event.request().suspendPolicy() == EventRequest.SUSPEND_NONE) {
                 // We won't be stopping here, so show the method name
-                printLocationOfEvent(me);
+                printLocationOfEvent(event);
 
             }
 
@@ -124,7 +124,7 @@ public class DebugSessionJdi extends DebugSession {
                 Env.setAtExitMethod(null);
                 EventRequestManager erm = Env.vm().eventRequestManager();
                 for (EventRequest eReq : erm.methodExitRequests()) {
-                    if (eReq.equals(me.request())) {
+                    if (eReq.equals(event.request())) {
                         eReq.disable();
                     }
                 }
@@ -186,8 +186,8 @@ public class DebugSessionJdi extends DebugSession {
         MessageOutput.println();
     }
 
-    private void printLocationOfEvent(LocatableEvent theEvent) {
-        printBaseLocation(theEvent.thread().name(), theEvent.location());
+    private void printLocationOfEvent(LocatableEvent event) {
+        printBaseLocation(event.thread().name(), event.location());
     }
 
     // void help() {
