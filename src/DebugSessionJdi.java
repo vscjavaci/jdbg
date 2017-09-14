@@ -6,31 +6,21 @@ import com.sun.jdi.request.*;
 import com.sun.jdi.connect.*;
 
 public class DebugSessionJdi extends DebugSession {
-    private volatile boolean shuttingDown = false;
-
-    public void setShuttingDown(boolean s) {
-       shuttingDown = s;
-    }
-
-    public boolean isShuttingDown() {
-        return shuttingDown;
-    }
-
     @Override
-    public void vmStartEvent(VMStartEvent event) {
+    public void onVMStartEvent(VMStartEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("VM Started:");
     }
 
     @Override
-    public boolean breakpointEvent(BreakpointEvent event) {
+    public boolean onBreakpointEvent(BreakpointEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Breakpoint hit:");
         return true;
     }
 
     @Override
-    public boolean fieldWatchEvent(WatchpointEvent event) {
+    public boolean onWatchpointEvent(WatchpointEvent event) {
         Field field = event.field();
         ObjectReference obj = event.object();
         Thread.yield();  // fetch output
@@ -47,14 +37,14 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public boolean stepEvent(StepEvent event) {
+    public boolean onStepEvent(StepEvent event) {
         Thread.yield();  // fetch output
         MessageOutput.lnprint("Step completed:");
         return true;
     }
 
     @Override
-    public boolean exceptionEvent(ExceptionEvent event) {
+    public boolean onExceptionEvent(ExceptionEvent event) {
         Thread.yield();  // fetch output
         Location catchLocation = event.catchLocation();
         if (catchLocation == null) {
@@ -69,7 +59,7 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public boolean methodEntryEvent(MethodEntryEvent event) {
+    public boolean onMethodEntryEvent(MethodEntryEvent event) {
         Thread.yield();  // fetch output
         /*
          * These can be very numerous, so be as efficient as possible.
@@ -88,7 +78,7 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public boolean methodExitEvent(MethodExitEvent event) {
+    public boolean onMethodExitEvent(MethodExitEvent event) {
         Thread.yield();  // fetch output
         /*
          * These can be very numerous, so be as efficient as possible.
@@ -137,7 +127,7 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     @Override
-    public void vmInterrupted() {
+    public void onVMInterrupted() {
         Thread.yield();  // fetch output
         printCurrentLocation();
         // for (String cmd : monitorCommands) {
