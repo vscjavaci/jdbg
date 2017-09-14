@@ -71,7 +71,7 @@ class SourceMapper {
     }
 
     /**
-     * Return a File cooresponding to the source of this location.
+     * Return a File corresponding to the source of this location.
      * Return null if not available.
      */
     File sourceFile(Location loc) {
