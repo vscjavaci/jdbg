@@ -2,7 +2,10 @@ package jdbg;
 
 import com.sun.jdi.event.*;
 
-public abstract class DebugSession {
+public abstract class DebugSession implements Runnable {
+    public abstract void open(boolean stopOnVMStart);
+    public abstract void close();
+
     public boolean onBreakpointEvent(BreakpointEvent event) { return true; }
     public boolean onClassPrepareEvent(ClassPrepareEvent event) {
         if (!Env.specList.resolve(event)) {

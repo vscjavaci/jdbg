@@ -14,8 +14,8 @@ public class DebugCommandRun extends DebugCommand {
          * we don't stop the VM on its VM start event (so
          * arg 2 is false).
          */
-        if ((Env.handler == null) && Env.connection().isOpen()) {
-            Env.handler = new EventHandler(Env.session, false);
+        if (Env.connection().isOpen()) {
+            Env.session.open(false);
         }
         return DebugEngine.JDBG_COMMAND_SUCCEEDED;
     }

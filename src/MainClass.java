@@ -304,7 +304,7 @@ public class MainClass {
                 connectSpec += ","; // (Bug ID 4285874)
             }
             Env.init(connectSpec, launchImmediately, traceFlags);
-            new DebugSessionJdi();
+            Env.session = new DebugSessionJdi();
             DebugEngine engine = new DebugEngine();
             engine.runScript(String.join("\n",
                 // generic commands

@@ -6,6 +6,182 @@ import com.sun.jdi.request.*;
 import com.sun.jdi.connect.*;
 
 public class DebugSessionJdi extends DebugSession {
+    Thread thread;
+    volatile boolean connected = true;
+    boolean completed = false;
+    String shutdownMessageKey;
+    boolean stopOnVMStart;
+
+    @Override
+    synchronized public void open(boolean stopOnVMStart) {
+        if (null != this.thread) {
+            return;
+        }
+        this.stopOnVMStart = stopOnVMStart;
+        this.thread = new Thread(this, "event-handler");
+        this.thread.start();
+    }
+
+    @Override
+    synchronized public void close() {
+        if (null == this.thread) {
+            return;
+        }
+        connected = false;  // force run() loop termination
+        thread.interrupt();
+        while (!completed) {
+            try {wait();} catch (InterruptedException exc) {}
+        }
+    }
+
+    @Override
+    public void run() {
+        EventQueue queue = Env.vm().eventQueue();
+        while (connected) {
+            try {
+                EventSet eventSet = queue.remove();
+                boolean resumeStoppedApp = false;
+                EventIterator it = eventSet.eventIterator();
+                while (it.hasNext()) {
+                    resumeStoppedApp |= !handleEvent(it.nextEvent());
+                }
+
+                if (resumeStoppedApp) {
+                    eventSet.resume();
+                } else if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                    setCurrentThread(eventSet);
+                    onVMInterrupted();
+                }
+            } catch (InterruptedException exc) {
+                // Do nothing. Any changes will be seen at top of loop.
+            } catch (VMDisconnectedException discExc) {
+                handleDisconnectedException();
+                break;
+            }
+        }
+        synchronized (this) {
+            completed = true;
+            notifyAll();
+        }
+    }
+
+    private boolean handleEvent(Event event) {
+        if (event instanceof BreakpointEvent) {
+            return onBreakpointEvent((BreakpointEvent)event);
+        }
+        if (event instanceof ClassPrepareEvent) {
+            return onClassPrepareEvent((ClassPrepareEvent)event);
+        }
+        if (event instanceof ClassUnloadEvent) {
+            return onClassUnloadEvent((ClassUnloadEvent)event);
+        }
+        if (event instanceof ExceptionEvent) {
+            return onExceptionEvent((ExceptionEvent)event);
+        }
+        if (event instanceof MethodEntryEvent) {
+            return onMethodEntryEvent((MethodEntryEvent)event);
+        }
+        if (event instanceof MethodExitEvent) {
+            return onMethodExitEvent((MethodExitEvent)event);
+        }
+        if (event instanceof StepEvent) {
+            return onStepEvent((StepEvent)event);
+        }
+        if (event instanceof ThreadDeathEvent) {
+            return onThreadDeathEvent((ThreadDeathEvent)event);
+        }
+        if (event instanceof ThreadStartEvent) {
+            return onThreadStartEvent((ThreadStartEvent)event);
+        }
+        if (event instanceof WatchpointEvent) {
+            return onWatchpointEvent((WatchpointEvent)event);
+        }
+        if (event instanceof VMStartEvent) {
+            onVMStartEvent((VMStartEvent)event);
+            return stopOnVMStart;
+        }
+        return handleExitEvent(event);
+    }
+
+    private boolean vmDied = false;
+    private boolean handleExitEvent(Event event) {
+        if (event instanceof VMDeathEvent) {
+            shutdownMessageKey = "The application exited";
+            vmDied = true;
+            return onVMDeathEvent((VMDeathEvent)event);
+        } else if (event instanceof VMDisconnectEvent) {
+            connected = false;
+            if (!vmDied) {
+                shutdownMessageKey = "The application has been disconnected";
+                onVMDisconnectEvent((VMDisconnectEvent)event);
+            }
+            Env.shutdown(shutdownMessageKey);
+            return false;
+        } else {
+            throw new InternalError(MessageOutput.format("Unexpected event type",
+                                                         new Object[] {event.getClass()}));
+        }
+    }
+
+    synchronized void handleDisconnectedException() {
+        /*
+         * A VMDisconnectedException has happened while dealing with
+         * another event. We need to flush the event queue, dealing only
+         * with exit events (VMDeath, VMDisconnect) so that we terminate
+         * correctly.
+         */
+        EventQueue queue = Env.vm().eventQueue();
+        while (connected) {
+            try {
+                EventSet eventSet = queue.remove();
+                EventIterator iter = eventSet.eventIterator();
+                while (iter.hasNext()) {
+                    handleExitEvent(iter.next());
+                }
+            } catch (InterruptedException exc) {
+                // ignore
+            } catch (InternalError exc) {
+                // ignore
+            }
+        }
+    }
+
+    private ThreadReference eventThread(Event event) {
+        if (event instanceof ClassPrepareEvent) {
+            return ((ClassPrepareEvent)event).thread();
+        } else if (event instanceof LocatableEvent) {
+            return ((LocatableEvent)event).thread();
+        } else if (event instanceof ThreadStartEvent) {
+            return ((ThreadStartEvent)event).thread();
+        } else if (event instanceof ThreadDeathEvent) {
+            return ((ThreadDeathEvent)event).thread();
+        } else if (event instanceof VMStartEvent) {
+            return ((VMStartEvent)event).thread();
+        } else {
+            return null;
+        }
+    }
+
+    private void setCurrentThread(EventSet set) {
+        ThreadReference thread;
+        if (set.size() > 0) {
+            /*
+             * If any event in the set has a thread associated with it,
+             * they all will, so just grab the first one.
+             */
+            Event event = set.iterator().next(); // Is there a better way?
+            thread = eventThread(event);
+        } else {
+            thread = null;
+        }
+        setCurrentThread(thread);
+    }
+
+    private void setCurrentThread(ThreadReference thread) {
+        ThreadInfo.invalidateAll();
+        ThreadInfo.setCurrentThread(thread);
+    }
+
     @Override
     public void onVMStartEvent(VMStartEvent event) {
         Thread.yield();  // fetch output
@@ -176,14 +352,13 @@ public class DebugSessionJdi extends DebugSession {
     }
 
     public DebugSessionJdi() throws Exception {
-        Env.session = this;
         if (Env.connection().isOpen() && Env.vm().canBeModified()) {
             /*
              * Connection opened on startup. Start event handler
              * immediately, telling it (through arg 2) to stop on the
              * VM start event.
              */
-            Env.handler = new EventHandler(Env.session, true);
+            open(true);
         }
     }
 }
