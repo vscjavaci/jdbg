@@ -52,7 +52,7 @@ SET OUTPUT_DIR=%TEMP%\jdbg-%RANDOM%
 
 MKDIR "%OUTPUT_DIR%"
 
-"%JAVA_HOME%\bin\javac.exe" -classpath "%JAVA_HOME%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java
+"%JAVA_HOME%\bin\javac.exe" -classpath "%JAVA_HOME%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java "%~dp0src"\command\*.java
 IF NOT %ERRORLEVEL% == 0 (
 	GOTO EOF
 )
