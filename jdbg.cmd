@@ -48,9 +48,15 @@ IF "%JAVA_HOME%" == "" (
 :LOAD
 PUSHD %CD%
 
+:ALLOC
 SET OUTPUT_DIR=%TEMP%\jdbg-%RANDOM%
-
-MKDIR "%OUTPUT_DIR%"
+IF EXIST "%OUTPUT_DIR%" (
+	GOTO ALLOC
+)
+MKDIR "%OUTPUT_DIR%" 2> NUL
+IF NOT %ERRORLEVEL% == 0 (
+	GOTO ALLOC
+)
 
 "%JAVA_HOME%\bin\javac.exe" -classpath "%JAVA_HOME%\lib\tools.jar" -d "%OUTPUT_DIR%" "%~dp0src"\*.java "%~dp0src"\command\*.java
 IF NOT %ERRORLEVEL% == 0 (
