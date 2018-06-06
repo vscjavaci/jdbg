@@ -195,6 +195,11 @@ public class DebugEngine {
 			super(null);
 			m_exception = ex;
 		}
+
+		@Override
+		void prepare() throws Exception {
+			throw m_exception;
+		}
 	}
 
 	class IrpCommandFromDebuggee extends IrpBase {

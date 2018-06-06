@@ -49,10 +49,10 @@ IF "%JAVA_HOME%" == "" (
 PUSHD %CD%
 SET SAVED_JAVA_OPTS=%JAVA_OPTS%
 SET JAVA_OPTS=-Djava.net.preferIPv4Stack=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8898
-START "debugee" jdwproxy
+START "debugee" "%ComSpec%" /C "jdwproxy & timeout /t 15"
 SET JAVA_OPTS=%SAVED_JAVA_OPTS%
-START "stub" jdwproxy stub 127.0.0.1:8888 127.0.0.1:8898
-START "proxy" jdwproxy proxy 127.0.0.1:7777 127.0.0.1:8888
+START "stub" "%ComSpec%" /C "jdwproxy stub 127.0.0.1:8888 127.0.0.1:8898 & timeout /t 15"
+START "proxy" "%ComSpec%" /C "jdwproxy proxy 127.0.0.1:7777 127.0.0.1:8888 & timeout /t 15"
 ..\jdbg\jdbg -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=7777
 POPD
 
