@@ -1,0 +1,20 @@
+#!/bin/bash
+
+pushd `dirname $0` > /dev/null
+SCRIPT_PATH=`pwd -P`
+
+if [ -z "$JAVA_HOME" ]; then
+	JAVA_HOME=$(/usr/libexec/java_home)
+fi
+
+popd > /dev/null
+
+OUTPUT_DIR=/tmp/jdwproxy-$((RANDOM))
+
+mkdir $OUTPUT_DIR
+
+javac -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
+
+java $JAVA_OPTS -classpath $OUTPUT_DIR jdwproxy.MainClass $*
+
+rm -R $OUTPUT_DIR

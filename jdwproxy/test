@@ -1,0 +1,11 @@
+#!/bin/bash
+
+SAVED_JAVA_OPTS=$JAVA_OPTS
+JAVA_OPTS="-Djava.net.preferIPv4Stack=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8898"
+export JAVA_OPTS
+./jdwproxy &
+JAVA_OPTS=$SAVED_JAVA_OPTS
+export JAVA_OPTS
+./jdwproxy stub 127.0.0.1:8888 127.0.0.1:8898 &
+./jdwproxy proxy 127.0.0.1:7777 127.0.0.1:8888 &
+../jdbg/jdbg -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=7777
