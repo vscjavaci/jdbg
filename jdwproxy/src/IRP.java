@@ -32,10 +32,6 @@ public abstract class IRP<T> {
 		m_subscribers.add(irp);
 	}
 
-	private void remove_subscriber(IRP irp) {
-		m_subscribers.remove(irp);
-	}
-
 	public void subscribe(IRP irp) {
 		if (m_dependants == null) {
 			m_dependants = new HashSet<>();
@@ -54,11 +50,6 @@ public abstract class IRP<T> {
 		}
 		if (status == 0) {
 			m_isReady = true;
-			if (m_dependants != null) {
-				for (IRP dependant : getDependantsSnapshot()) {
-					dependant.remove_subscriber(this);
-				}
-			}
 			if (m_subscribers != null) {
 				for (IRP subscriber : m_subscribers.toArray(new IRP[0])) {
 					subscriber.alert();
