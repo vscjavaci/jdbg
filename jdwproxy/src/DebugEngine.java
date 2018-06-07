@@ -40,6 +40,7 @@ public class DebugEngine {
 	private int m_status = JDWP_SUCCEEDED;
 	private final Endpoint m_incomingEndpoint;
 	private final Endpoint m_outgoingEndpoint;
+	private IrpCommandFromDebugger m_lastIrpCommandFromDebugger = null;
 
 	public DebugEngine(Endpoint incoming, Endpoint outgoing, Mode mode) {
 		m_incomingEndpoint = incoming;
@@ -315,23 +316,32 @@ public class DebugEngine {
 	}
 
 	class IrpCommandFromDebugger extends IrpBase {
+		IrpCommandToDebuggee m_irpCommandToDebuggee = null;
+
 		public IrpCommandFromDebugger(Packet command) {
 			super(command);
 		}
 
 		public Packet getReplyPacket() {
-			IrpCommandToDebuggee command = null;
-			for (IRP dependant : getDependantsSnapshot()) {
-				assert command == null;
-				command = (IrpCommandToDebuggee)dependant;
+			if (m_irpCommandToDebuggee == null) {
+				return null;
 			}
-			assert command != null;
-			return command.getReplyPacket();
+			return m_irpCommandToDebuggee.getReplyPacket();
+		}
+
+		void subscribeIrpCommandToDebuggee(IrpCommandToDebuggee irp) {
+			m_irpCommandToDebuggee = irp;
+			subscribe(irp);
 		}
 
 		@Override
 		void prepare() throws Exception {
 			super.prepare();
+
+			if (m_lastIrpCommandFromDebugger != null && !m_lastIrpCommandFromDebugger.isReady()) {
+				subscribe(m_lastIrpCommandFromDebugger); // enforce order while replying to debugger
+			}
+			m_lastIrpCommandFromDebugger = this;
 
 			Packet command = payload;
 			JvmId commandKey = new JvmId(command.code);
@@ -352,7 +362,7 @@ public class DebugEngine {
 					break;
 				}
 			}
-			subscribe(irp);
+			subscribeIrpCommandToDebuggee(irp);
 			if (irp.isReady()) {
 				alert();
 			}
@@ -373,22 +383,27 @@ public class DebugEngine {
 				}
 			}
 			replyIrp.alert();
+			// TODO: remove from command history (and let it GC) if there is no subscriber
 		}
 	}
 
 	class IrpCommandToDebuggee extends IrpBase {
+		IrpReplyFromDebuggee m_irpReplyFromDebuggee = null;
+
 		public IrpCommandToDebuggee(Packet command) {
 			super(command);
 		}
 
+		void subscribeIrpReplyFromDebuggee(IrpReplyFromDebuggee irp) {
+			m_irpReplyFromDebuggee = irp;
+			subscribe(irp);
+		}
+
 		public Packet getReplyPacket() {
-			IRP[] dependantsSnapshot = getDependantsSnapshot();
-			if (dependantsSnapshot != null) {
-				for (IRP dependant : dependantsSnapshot) {
-					return ((IrpReplyFromDebuggee)dependant).payload;
-				}
+			if (m_irpReplyFromDebuggee == null) {
+				return null;
 			}
-			return null;
+			return m_irpReplyFromDebuggee.payload;
 		}
 
 		@Override
@@ -438,7 +453,7 @@ public class DebugEngine {
 
 			IrpCommandToDebuggee commandIrp = m_dispatchedCommands.get(payload.id);
 			assert commandIrp != null; // REPLY should map to a previously sent COMMAND
-			commandIrp.subscribe(this);
+			commandIrp.subscribeIrpReplyFromDebuggee(this);
 			alert();
 		}
 	}
