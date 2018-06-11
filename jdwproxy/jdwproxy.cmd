@@ -58,7 +58,7 @@ IF NOT %ERRORLEVEL% == 0 (
 	GOTO ALLOC
 )
 
-"%JAVA_HOME%\bin\javac.exe" -d "%OUTPUT_DIR%" -g "%~dp0src"\*.java
+"%JAVA_HOME%\bin\javac.exe" -d "%OUTPUT_DIR%" -g "%~dp0src"\jdwproxy\*.java
 IF NOT %ERRORLEVEL% == 0 (
 	GOTO EOF
 )

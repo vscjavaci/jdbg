@@ -13,7 +13,7 @@ OUTPUT_DIR=/tmp/jdwproxy-$((RANDOM))
 
 mkdir $OUTPUT_DIR
 
-javac -d $OUTPUT_DIR $SCRIPT_PATH/src/*.java
+javac -d $OUTPUT_DIR $SCRIPT_PATH/src/jdwproxy/*.java
 
 java $JAVA_OPTS -classpath $OUTPUT_DIR jdwproxy.MainClass $*
 
